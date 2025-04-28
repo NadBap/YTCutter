@@ -1,0 +1,8 @@
+#AHHHHHHHHHHHHHHHHHHHHH
+
+#UI
+pygame
+
+#Downloaders
+ffmpeg
+yt-dlp
