@@ -31,7 +31,8 @@ def main():
         ddd.main(ConvertLink, num, filepath, thread)
         thread.join()
         
-    # def ClipClick():
+    '''
+    def ClipClick():
         ConvertLink = Link.get()
         filepath = filedialog.askdirectory()
         Time = ct.main()
@@ -40,7 +41,7 @@ def main():
         master.destroy()
         ccc.main(ConvertLink, num, filepath, Time[0], Time[1], thread)
         thread.join()
-        
+    '''
     # Window Config
     master.geometry("400x300")
 
