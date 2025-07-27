@@ -1,7 +1,10 @@
 import os
+from os import listdir
+from os.path import isfile, join
 import pygame
     
 running = True
+spriteType = "Niko Dance"
 def main(x, y):
     global running
     os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
@@ -31,14 +34,14 @@ def main(x, y):
          
         screen.fill("Dark Blue")   
         
-        spritefilepath = os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", f"Loading-{FrameLoad(time)}.gif")
+        spritefilepath = os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", spriteType, f"Loading-{FrameLoad(time)}.gif")
         spritefilepath = os.path.abspath(spritefilepath)
         sprite = pygame.image.load(spritefilepath)
         
         sprite = pygame.transform.scale(sprite, (200, 200))
         screen.blit(sprite, (200 - sprite.get_width() // 2, 150 - sprite.get_height() // 2))
 
-        LoadingTxt = font.render("Loading...", True, "Black")
+        LoadingTxt = font.render("Loading...", True, "Cyan")
         screen.blit(LoadingTxt, (210 - LoadingTxt.get_width() // 2, 45 - LoadingTxt.get_height() // 2))
         
         pygame.draw.rect(screen, "Royal Blue", pygame.Rect(bkrect_dim))
@@ -70,7 +73,7 @@ def LdBarSlide(LdRect_dim):
         LdRect_dim[2] += 2
     else:
         LdRect_dim[0] += 2
-
+'''
 def FrameLoad(time):
     if time <= 10:
         return 1
@@ -84,7 +87,15 @@ def FrameLoad(time):
         return 5
     else:
         return 6
-
+'''
+def FrameLoad(time):
+    onlyfiles = [f for f in listdir(os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", spriteType)) if isfile(join(os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", spriteType), f))]
+    count = 1
+    while True:
+        if time / count <= 60/len(onlyfiles):
+            return count
+        else:
+            count += 1
 def stopLoading():
     global running
     running = False

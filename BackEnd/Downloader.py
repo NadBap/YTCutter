@@ -9,6 +9,7 @@ class Downloader:
         self.file_path = file_path
         self.thread = thread
         self.is_playlist = self.detect_playlist()
+        print(f"Selection: {selection}")
 
     def detect_playlist(self):
         url = str(self.url)
@@ -32,6 +33,7 @@ class Downloader:
     def build_command(self):
         if self.selection == 1:
             command = ["yt-dlp", "-f", "bestvideo"]
+            print("Video only")
         elif self.selection == 2:
             command = [
                 "yt-dlp",
@@ -41,16 +43,18 @@ class Downloader:
                 "--audio-format",
                 "mp3",
             ]
+            print("Audio Only")
         elif self.selection == 3:
             command = [
                 "yt-dlp",
                 "-f",
-                "bestvideo[ext=mp4]+bestaudio[ext=m4a]",
+                "bestvideo+bestaudio",
                 "--merge-output-format",
                 "mp4",
                 "--remux-video",
                 "mp4",
             ]
+            print("Video + Audio")
         else:
             return None
 

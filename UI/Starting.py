@@ -18,11 +18,12 @@ def main():
 
     def on_select(event):
         global num
-        selected_text = n.get()  # Get selected text
+        selected_text = Options.get()  # Get selected text
         selected_value = options[selected_text]  # Get corresponding value
         num = selected_value
         
     def DownloadClick():
+        print(num)
         ConvertLink = Link.get()
         filepath = filedialog.askdirectory()
         thread = threading.Thread(target=lb.main, args= (master.winfo_x(), master.winfo_y()))
@@ -61,9 +62,9 @@ def main():
     # Clip = Button(master, text="Clip", width=20, activebackground="light gray",
  #                command=ClipClick)
 
-    Options = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= n)
+    Options = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= n, )
     Options.set("Video+Audio")
-    Options.bind("<<ComboboxSelected>>", on_select)
+    Options.bind('<<ComboboxSelected>>', on_select)
 
     Title.pack()
     h2.pack()
