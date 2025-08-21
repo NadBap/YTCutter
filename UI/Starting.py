@@ -12,24 +12,16 @@ def main():
     master = Tk()
 
     YTlink = StringVar()
-    num = 3
     n = StringVar()
     options = {"Video": 1, "Audio": 2, "Video+Audio": 3}
 
-    def on_select(event):
-        global num
-        selected_text = Options.get()  # Get selected text
-        selected_value = options[selected_text]  # Get corresponding value
-        num = selected_value
-        
     def DownloadClick():
-        print(num)
         ConvertLink = Link.get()
         filepath = filedialog.askdirectory()
         thread = threading.Thread(target=lb.main, args= (master.winfo_x(), master.winfo_y()))
         thread.start()
+        ddd.main(ConvertLink, options[Options.get()], filepath, thread)
         master.destroy()
-        ddd.main(ConvertLink, num, filepath, thread)
         thread.join()
         
     '''
@@ -59,12 +51,11 @@ def main():
     Download = Button(master, text="Download", width=20, activebackground="light gray",
                 command=DownloadClick)
     
-    # Clip = Button(master, text="Clip", width=20, activebackground="light gray",
+    # Clip = Button(master, text="Clip", width=20, activebackground="light gray", 
  #                command=ClipClick)
 
     Options = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= n, )
     Options.set("Video+Audio")
-    Options.bind('<<ComboboxSelected>>', on_select)
 
     Title.pack()
     h2.pack()
