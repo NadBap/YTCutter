@@ -1,3 +1,4 @@
 from UI import Starting
 
-Starting.main()
+if __name__ == "__main__":
+    Starting.main()

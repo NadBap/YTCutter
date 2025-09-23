@@ -6,3 +6,6 @@ pygame
 #Downloaders
 ffmpeg
 yt-dlp
+
+#Logic
+thread

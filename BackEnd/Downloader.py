@@ -1,6 +1,11 @@
+import os
 import subprocess
+import shutil
 from UI import LoadingBar as lb
 
+ffmpeg_path = os.path.join(os.path.dirname(__file__), "..", "Util", "ffmpeg")
+os.environ["PATH"] += os.pathsep + ffmpeg_path
+print("ffmpeg found:", shutil.which("ffmpeg"))
 
 class Downloader:
     def __init__(self, url, selection, file_path, thread=None):
@@ -48,11 +53,8 @@ class Downloader:
             command = [
                 "yt-dlp",
                 "-f",
-                "bestvideo+bestaudio",
-                "--merge-output-format",
-                "mp4",
-                "--remux-video",
-                "mp4",
+                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio",
+                "--merge-output-format", "mp4",
             ]
             print("Video + Audio")
         else:
@@ -75,7 +77,7 @@ class Downloader:
 
     def download(self, command):
         try:
-            subprocess.run(command, check=True, text=True, capture_output=True)
+            subprocess.run(command, check=True, text=True)
             print("Successfully Installed")
             if self.thread is not None:
                 lb.stopLoading()

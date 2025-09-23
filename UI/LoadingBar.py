@@ -4,7 +4,7 @@ from os.path import isfile, join
 import pygame
     
 running = True
-spriteType = "Niko Dance"
+spriteType = "Wattson"
 def main(x, y):
     global running
     os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
