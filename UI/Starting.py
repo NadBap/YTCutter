@@ -1,40 +1,30 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-import  threading
-
-from BackEnd import Downloader as ddd
-from BackEnd import Clip as ccc
-from UI import ClipTIme as ct
-from UI import LoadingBar as lb
+import os
+from UI.LoadingBar import resource_path as rp
 
 def main():
     master = Tk()
 
     YTlink = StringVar()
-    n = StringVar()
-    options = {"Video": 1, "Audio": 2, "Video+Audio": 3}
+    FormatVar = StringVar()
+    LoadingSpriteVar = StringVar()
+    FOptions = {"Video": 1, "Audio": 2, "Video+Audio": 3}
+    
+    result = {}
+    listLoadingSprites = os.listdir(rp("Util/Sprite/LoadingSprite"))
 
-    def DownloadClick():
-        ConvertLink = Link.get()
-        filepath = filedialog.askdirectory()
-        thread = threading.Thread(target=lb.main, args= (master.winfo_x(), master.winfo_y()))
-        thread.start()
-        ddd.main(ConvertLink, options[Options.get()], filepath, thread)
+    def ExitClick(name=None):
+        result["link"] = YTlink.get()
+        result["filepath"] = filedialog.askdirectory()
+        result["selection"] = FOptions[FormatVar.get()]
+        result["button"] = name
+        result["x"] = master.winfo_x()
+        result["y"] = master.winfo_y()
+        result["LoadingSprite"] = LoadingSpriteVar.get()
         master.destroy()
-        thread.join()
-        
-    '''
-    def ClipClick():
-        ConvertLink = Link.get()
-        filepath = filedialog.askdirectory()
-        Time = ct.main()
-        thread = threading.Thread(target=lb.main, args= (master.winfo_x(), master.winfo_y()))
-        thread.start()
-        master.destroy()
-        ccc.main(ConvertLink, num, filepath, Time[0], Time[1], thread)
-        thread.join()
-    '''
+
     # Window Config
     master.geometry("400x300")
 
@@ -49,21 +39,26 @@ def main():
                 , bd=2)
 
     Download = Button(master, text="Download", width=20, activebackground="light gray",
-                command=DownloadClick)
+                command=lambda: ExitClick("Download"))
     
-    # Clip = Button(master, text="Clip", width=20, activebackground="light gray", 
- #                command=ClipClick)
-
-    Options = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= n, )
-    Options.set("Video+Audio")
+    formatOption = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= FormatVar, state="readonly")
+    formatOption.set("Video+Audio")
+    
+    spriteOption = ttk.Combobox(master, textvariable= LoadingSpriteVar, state="readonly")
+    spriteOption['values'] = listLoadingSprites
+    spriteOption.set(listLoadingSprites[0])
 
     Title.pack()
     h2.pack()
-    Options.pack()
+    formatOption.pack()
     Link.pack(pady=25)  
     Download.pack()
-    # Clip.pack()
+    spriteOption.pack(pady=5)
     # Make screen appear
     master.mainloop()
+    return result
+
+
 if __name__ == "__main__":
-    main()
+    ello = main()
+    print(ello) 

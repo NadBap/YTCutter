@@ -1,64 +1,105 @@
 import os
-from os import listdir
+import re
 from os.path import isfile, join
+import sys
 import pygame
-    
 running = True
-spriteType = "Wattson"
-def main(x, y):
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and PyInstaller """
+    if getattr(sys, 'frozen', False): 
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+def load_frame_paths(sprite_folder):
+    folder = resource_path(sprite_folder)
+    if not os.path.isdir(folder):
+        raise FileNotFoundError(f"Sprite folder not found: {folder}")
+
+    pattern = re.compile(r'Loading-(\d+)\.\w+$') 
+    numbered = []
+    for name in os.listdir(folder):
+        full = join(folder, name)
+        if not isfile(full):
+            continue
+        m = pattern.match(name)
+        if m:
+            numbered.append((int(m.group(1)), name))
+
+    if not numbered:
+        files = [f for f in os.listdir(folder) if isfile(join(folder, f))]
+        files.sort()
+        return [join(folder, f) for f in files]
+
+    numbered.sort(key=lambda t: t[0])
+    return [join(folder, name) for (_, name) in numbered]
+
+
+def stopLoading():
     global running
-    os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
+    running = False
+    
+def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
+    global running
+    sprite_folder = f"Util/Sprite/LoadingSprite/{sprite}"
+    frame_paths = load_frame_paths(sprite_folder)
+    total_frames = len(frame_paths)
+    if total_frames == 0:
+        raise RuntimeError(f"No frames found in {sprite_folder}")
+
+    ticks_per_frame = max(1, fps // total_frames)
+
+    if debug:
+        print("DEBUG: sprite_folder =", resource_path(sprite_folder))
+        print("DEBUG: total_frames =", total_frames)
+        print("DEBUG: ticks_per_frame =", ticks_per_frame)
+        print("DEBUG: loop duration seconds =", (total_frames * ticks_per_frame) / fps)
+
     pygame.init()
+    os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
     screen = pygame.display.set_mode((400, 300))
     clock = pygame.time.Clock()
 
-    time = 0
-    
-    bkrectwidth = 300
-    bkrectheight = 25
-    
+    fontfilepath = resource_path("Util/Font/DTM-Sans.ttf")
+    font = pygame.font.Font(fontfilepath, 50)
+
+    bkrectwidth, bkrectheight = 300, 25
     bkrect_dim = bkBar(bkrectwidth, bkrectheight, screen)
     LdRect_dim = [bkrect_dim[0], bkrect_dim[1], bkrect_dim[2] - 250, bkrect_dim[3]]
-    
-    screen.fill("Dark Blue")
-    
-    pygame.display.set_caption("Loading")
-    pygame.draw.rect(screen, "light gray", pygame.Rect(bkrect_dim))
+
+
+    tick = 0  
+
+        
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = True
-            fontfilepath = os.path.join(os.path.dirname(__file__), "..", "Util", "Font", "DTM-Sans.ttf")
-            fontfilepath = os.path.abspath(fontfilepath)
-            font = pygame.font.Font(fontfilepath, 50)
-         
-        screen.fill("Dark Blue")   
-        
-        spritefilepath = os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", spriteType, f"Loading-{FrameLoad(time)}.gif")
-        spritefilepath = os.path.abspath(spritefilepath)
-        sprite = pygame.image.load(spritefilepath)
-        
-        sprite = pygame.transform.scale(sprite, (200, 200))
-        screen.blit(sprite, (200 - sprite.get_width() // 2, 150 - sprite.get_height() // 2))
+                running = False
+
+        frame_index = (tick // ticks_per_frame) % total_frames
+        sprite_path = frame_paths[frame_index]
+        sprite_surf = pygame.image.load(sprite_path)
+
+        screen.fill("Dark Blue")
+        sprite_surf = pygame.transform.scale(sprite_surf, (200, 200))
+        screen.blit(sprite_surf, (200 - sprite_surf.get_width() // 2, 150 - sprite_surf.get_height() // 2))
 
         LoadingTxt = font.render("Loading...", True, "Cyan")
         screen.blit(LoadingTxt, (210 - LoadingTxt.get_width() // 2, 45 - LoadingTxt.get_height() // 2))
-        
+
         pygame.draw.rect(screen, "Royal Blue", pygame.Rect(bkrect_dim))
         pygame.draw.rect(screen, "cyan", LdRect_dim)
-        
+
         LdBarSlide(LdRect_dim)
-        if time >= 60:
-            time = 0
-        else:
-            time += 1
-        clock.tick(60)
+
+        tick += 1
+        clock.tick(fps)
         pygame.display.flip()
 
     pygame.quit()
-    
 
-def bkBar(rect_width, rect_height, screen): 
+def bkBar(rect_width, rect_height, screen):
     screen_width, screen_height = screen.get_size()
     x = (screen_width - rect_width) // 2
     y = (screen_height - rect_height) // 1.1
@@ -73,31 +114,6 @@ def LdBarSlide(LdRect_dim):
         LdRect_dim[2] += 2
     else:
         LdRect_dim[0] += 2
-'''
-def FrameLoad(time):
-    if time <= 10:
-        return 1
-    elif time <= 20:
-        return 2
-    elif time <= 30:
-        return 3
-    elif time <= 40:
-        return 4
-    elif time <= 50:
-        return 5
-    else:
-        return 6
-'''
-def FrameLoad(time):
-    onlyfiles = [f for f in listdir(os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", spriteType)) if isfile(join(os.path.join(os.path.dirname(__file__), "..", "Util", "Sprite", "LoadingSprite", spriteType), f))]
-    count = 1
-    while True:
-        if time / count <= 60/len(onlyfiles):
-            return count
-        else:
-            count += 1
-def stopLoading():
-    global running
-    running = False
+
 if __name__ == "__main__":
-    main(200, 100)  
+    main(200, 100, sprite="CharlieBrownGif", debug=True)

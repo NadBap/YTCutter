@@ -3,9 +3,7 @@ import subprocess
 import shutil
 from UI import LoadingBar as lb
 
-ffmpeg_path = os.path.join(os.path.dirname(__file__), "..", "Util", "ffmpeg")
-os.environ["PATH"] += os.pathsep + ffmpeg_path
-print("ffmpeg found:", shutil.which("ffmpeg"))
+
 
 class Downloader:
     def __init__(self, url, selection, file_path, thread=None):
@@ -14,8 +12,15 @@ class Downloader:
         self.file_path = file_path
         self.thread = thread
         self.is_playlist = self.detect_playlist()
+        
+        ffmpeg_path = os.path.join(os.path.dirname(__file__), "..", "Util", "ffmpeg")
+        os.environ["PATH"] += os.pathsep + ffmpeg_path
+        print("ffmpeg found:", shutil.which("ffmpeg"))
         print(f"Selection: {selection}")
+        
+        self.ytdlp_path = os.path.join(os.path.dirname(__file__), "..", "Util", "yt-dlp.exe")
 
+        self.cookies_path = os.path.join(os.path.dirname(__file__), "..", "Util", "cookies.txt")
     def detect_playlist(self):
         url = str(self.url)
         index_pos = url.find("index=")
@@ -37,11 +42,17 @@ class Downloader:
 
     def build_command(self):
         if self.selection == 1:
-            command = ["yt-dlp", "-f", "bestvideo"]
-            print("Video only")
+           command = [
+                    self.ytdlp_path,
+                    "-f", "bestvideo+bestaudio/best",
+                    "--merge-output-format", "mp4",
+                    "--recode-video", "mp4",
+                    "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -an"
+                ]
+           print("Video only")
         elif self.selection == 2:
             command = [
-                "yt-dlp",
+                self.ytdlp_path,
                 "-f",
                 "bestaudio",
                 "--extract-audio",
@@ -51,15 +62,18 @@ class Downloader:
             print("Audio Only")
         elif self.selection == 3:
             command = [
-                "yt-dlp",
+                self.ytdlp_path,
                 "-f",
-                "bestvideo[ext=mp4]+bestaudio[ext=m4a]/bestvideo+bestaudio",
+                "bestvideo+bestaudio/best",
                 "--merge-output-format", "mp4",
+                "--recode-video", "mp4",
+                "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -c:a aac -b:a 192k"
             ]
             print("Video + Audio")
         else:
             return None
-
+        
+        command.extend(["--cookies", self.cookies_path])
         if self.is_playlist:
             command.extend(
                 [
@@ -81,18 +95,20 @@ class Downloader:
             print("Successfully Installed")
             if self.thread is not None:
                 lb.stopLoading()
+            return 0
         except subprocess.CalledProcessError as e:
             print("An error occurred while downloading")
             print(f"Error Output: {e.returncode} {e}")
             if self.thread is not None:
                 lb.stopLoading()
+            return 2
 
     def run(self):
         command = self.build_command()
         if command is None:
             print("No valid selection")
             return 1
-        self.download(command)
+        return self.download(command)
 
 
 def main(url, selection, file_path, thread=None):
