@@ -1,0 +1,16 @@
+{
+    "Downloader": {
+        "Formats":
+            {
+                "Video-Audio": "mp4",
+                "Audio": "wav",
+                "Video": "mkv"
+            }
+    },
+    "Loading Bar": {
+        "Background-Color": "Dark Blue",
+        "Font-Color" : "Cyan",
+        "BackgoundBar-Color": "Royal Blue",
+        "MovingBar-Color": "Cyan"
+    }
+}

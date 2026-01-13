@@ -1,9 +1,18 @@
+import json
 import os
 import subprocess
 import shutil
+import sys
 from UI import LoadingBar as lb
 
 
+
+def resource_path(relative_path):
+    if getattr(sys, 'frozen', False): 
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class Downloader:
     def __init__(self, url, selection, file_path, thread=None):
@@ -12,7 +21,9 @@ class Downloader:
         self.file_path = file_path
         self.thread = thread
         self.is_playlist = self.detect_playlist()
-        
+        json_path = resource_path("Util/user-experience.json")
+        with open(json_path, 'r') as file:
+            self.jsoncontrol = json.load(file)
         ffmpeg_path = os.path.join(os.path.dirname(__file__), "..", "Util", "ffmpeg")
         os.environ["PATH"] += os.pathsep + ffmpeg_path
         print("ffmpeg found:", shutil.which("ffmpeg"))
@@ -45,19 +56,18 @@ class Downloader:
            command = [
                     self.ytdlp_path,
                     "-f", "bestvideo+bestaudio/best",
-                    "--merge-output-format", "mp4",
-                    "--recode-video", "mp4",
+                    "--merge-output-format", self.jsoncontrol["Downloader"]["Formats"]["Video"],
+                    "--recode-video", self.jsoncontrol["Downloader"]["Formats"]["Video"],
                     "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -an"
                 ]
            print("Video only")
         elif self.selection == 2:
             command = [
                 self.ytdlp_path,
-                "-f",
-                "bestaudio",
-                "--extract-audio",
-                "--audio-format",
-                "mp3",
+        "-f", "bestaudio/best",
+        "--extract-audio",
+        "--audio-format", self.jsoncontrol["Downloader"]["Formats"]["Audio"],
+        "--audio-quality", "0",
             ]
             print("Audio Only")
         elif self.selection == 3:
@@ -65,8 +75,8 @@ class Downloader:
                 self.ytdlp_path,
                 "-f",
                 "bestvideo+bestaudio/best",
-                "--merge-output-format", "mp4",
-                "--recode-video", "mp4",
+                "--merge-output-format", self.jsoncontrol["Downloader"]["Formats"]["Video-Audio"],
+                "--recode-video", self.jsoncontrol["Downloader"]["Formats"]["Video-Audio"],
                 "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -c:a aac -b:a 192k"
             ]
             print("Video + Audio")

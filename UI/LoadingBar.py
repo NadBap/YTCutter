@@ -1,9 +1,13 @@
+import json
 import os
 import re
 from os.path import isfile, join
 import sys
 import pygame
+
 running = True
+
+
 def resource_path(relative_path):
     """ Get absolute path to resource, works for dev and PyInstaller """
     if getattr(sys, 'frozen', False): 
@@ -43,6 +47,9 @@ def stopLoading():
 def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
     global running
     sprite_folder = f"Util/Sprite/LoadingSprite/{sprite}"
+    json_path = resource_path("Util/user-experience.json")
+    with open(json_path, 'r') as file:
+        jsoncontrol = json.load(file)
     frame_paths = load_frame_paths(sprite_folder)
     total_frames = len(frame_paths)
     if total_frames == 0:
@@ -81,15 +88,15 @@ def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
         sprite_path = frame_paths[frame_index]
         sprite_surf = pygame.image.load(sprite_path)
 
-        screen.fill("Dark Blue")
+        screen.fill(jsoncontrol["Loading Bar"]["Background-Color"])
         sprite_surf = pygame.transform.scale(sprite_surf, (200, 200))
         screen.blit(sprite_surf, (200 - sprite_surf.get_width() // 2, 150 - sprite_surf.get_height() // 2))
 
-        LoadingTxt = font.render("Loading...", True, "Cyan")
+        LoadingTxt = font.render("Loading...", True, jsoncontrol["Loading Bar"]["Font-Color"])
         screen.blit(LoadingTxt, (210 - LoadingTxt.get_width() // 2, 45 - LoadingTxt.get_height() // 2))
 
-        pygame.draw.rect(screen, "Royal Blue", pygame.Rect(bkrect_dim))
-        pygame.draw.rect(screen, "cyan", LdRect_dim)
+        pygame.draw.rect(screen, jsoncontrol["Loading Bar"]["BackgoundBar-Color"], pygame.Rect(bkrect_dim))
+        pygame.draw.rect(screen, jsoncontrol["Loading Bar"]["MovingBar-Color"], LdRect_dim)
 
         LdBarSlide(LdRect_dim)
 
@@ -116,4 +123,4 @@ def LdBarSlide(LdRect_dim):
         LdRect_dim[0] += 2
 
 if __name__ == "__main__":
-    main(200, 100, sprite="CharlieBrownGif", debug=True)
+    main(200, 100, sprite="Sonic Shadow Dap", debug=True)
