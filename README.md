@@ -45,5 +45,9 @@ You can access this by going into the Util folder
 | aac | webm |
 | flac | avi |
 | wav | mov |
-Unsupported formats will default back to mkv or mp3
+
+**Unsupported formats will default back to mkv or mp3**
+
+## Adding your own gifs
+You cana
 
