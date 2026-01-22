@@ -1,16 +1,16 @@
 {
-    "Downloader": {
-        "Formats":
-            {
-                "Video-Audio": "mp4",
-                "Audio": "wav",
-                "Video": "mkv"
-            }
+    "downloader": {
+        "formats": {
+            "video_audio": "mp4",
+            "audio": "wav",
+            "video": "mkv"
+        }
     },
-    "Loading Bar": {
-        "Background-Color": "Dark Blue",
-        "Font-Color" : "Cyan",
-        "BackgoundBar-Color": "Royal Blue",
-        "MovingBar-Color": "Cyan"
+    "loading_bar": {
+        "background_color": "Dark Blue",
+        "font_color": "Cyan",
+        "backgoundbar_color": "Royal Blue",
+        "movingbar_color": "Cyan",
+        "loaded_sprite": "Wattson"
     }
 }

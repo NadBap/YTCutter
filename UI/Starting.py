@@ -1,8 +1,9 @@
+import json
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
 import os
-from UI.LoadingBar import resource_path as rp
+from BackEnd.file_utils import resource_path as rp
 
 def main():
     master = Tk()
@@ -12,6 +13,10 @@ def main():
     LoadingSpriteVar = StringVar()
     FOptions = {"Video": 1, "Audio": 2, "Video+Audio": 3}
     
+    json_path = rp("Util/user-experience.json")
+    with open(json_path, 'r') as file:
+        jsoncontrol = json.load(file)
+        
     result = {}
     listLoadingSprites = os.listdir(rp("Util/Sprite/LoadingSprite"))
 
@@ -44,9 +49,19 @@ def main():
     formatOption = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= FormatVar, state="readonly")
     formatOption.set("Video+Audio")
     
+    listLoadingSpritesNew = [jsoncontrol["loading_bar"]["loaded_sprite"]]
+    print(listLoadingSprites)
+    for i in listLoadingSprites:
+        if i != jsoncontrol["loading_bar"]["loaded_sprite"]:
+            listLoadingSpritesNew.append(i)  
+            
     spriteOption = ttk.Combobox(master, textvariable= LoadingSpriteVar, state="readonly")
-    spriteOption['values'] = listLoadingSprites
-    spriteOption.set(listLoadingSprites[0])
+    spriteOption['values'] = listLoadingSpritesNew
+    # spriteOption.set(jsoncontrol["loading_bar"]["loaded_sprite"])
+    
+   
+    
+    spriteOption.set(listLoadingSpritesNew[0])
 
     Title.pack()
     h2.pack()

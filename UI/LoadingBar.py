@@ -4,20 +4,12 @@ import re
 from os.path import isfile, join
 import sys
 import pygame
+from BackEnd import file_utils 
 
 running = True
 
-
-def resource_path(relative_path):
-    """ Get absolute path to resource, works for dev and PyInstaller """
-    if getattr(sys, 'frozen', False): 
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
-
 def load_frame_paths(sprite_folder):
-    folder = resource_path(sprite_folder)
+    folder = file_utils.resource_path(sprite_folder)
     if not os.path.isdir(folder):
         raise FileNotFoundError(f"Sprite folder not found: {folder}")
 
@@ -43,13 +35,26 @@ def load_frame_paths(sprite_folder):
 def stopLoading():
     global running
     running = False
-    
-def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
-    global running
-    sprite_folder = f"Util/Sprite/LoadingSprite/{sprite}"
-    json_path = resource_path("Util/user-experience.json")
+
+def defaultSprite(sprite):
+    json_path = file_utils.resource_path("Util/user-experience.json")
     with open(json_path, 'r') as file:
         jsoncontrol = json.load(file)
+        
+    jsoncontrol["loading_bar"]["loaded_sprite"] = sprite
+    
+    file_utils.atomic_write_json(json_path, jsoncontrol)
+    
+    return jsoncontrol
+
+def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
+    global running
+    
+    sprite_folder = f"Util/Sprite/LoadingSprite/{sprite}"
+    
+    jsoncontrol = defaultSprite(sprite)
+
+    
     frame_paths = load_frame_paths(sprite_folder)
     total_frames = len(frame_paths)
     if total_frames == 0:
@@ -58,7 +63,7 @@ def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
     ticks_per_frame = max(1, fps // total_frames)
 
     if debug:
-        print("DEBUG: sprite_folder =", resource_path(sprite_folder))
+        print("DEBUG: sprite_folder =", file_utils.resource_path(sprite_folder))
         print("DEBUG: total_frames =", total_frames)
         print("DEBUG: ticks_per_frame =", ticks_per_frame)
         print("DEBUG: loop duration seconds =", (total_frames * ticks_per_frame) / fps)
@@ -68,7 +73,7 @@ def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
     screen = pygame.display.set_mode((400, 300))
     clock = pygame.time.Clock()
 
-    fontfilepath = resource_path("Util/Font/DTM-Sans.ttf")
+    fontfilepath = file_utils.resource_path("Util/Font/DTM-Sans.ttf")
     font = pygame.font.Font(fontfilepath, 50)
 
     bkrectwidth, bkrectheight = 300, 25
@@ -88,15 +93,15 @@ def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
         sprite_path = frame_paths[frame_index]
         sprite_surf = pygame.image.load(sprite_path)
 
-        screen.fill(jsoncontrol["Loading Bar"]["Background-Color"])
+        screen.fill(jsoncontrol["loading_bar"]["background_color"])
         sprite_surf = pygame.transform.scale(sprite_surf, (200, 200))
         screen.blit(sprite_surf, (200 - sprite_surf.get_width() // 2, 150 - sprite_surf.get_height() // 2))
 
-        LoadingTxt = font.render("Loading...", True, jsoncontrol["Loading Bar"]["Font-Color"])
+        LoadingTxt = font.render("Loading...", True, jsoncontrol["loading_bar"]["font_color"])
         screen.blit(LoadingTxt, (210 - LoadingTxt.get_width() // 2, 45 - LoadingTxt.get_height() // 2))
 
-        pygame.draw.rect(screen, jsoncontrol["Loading Bar"]["BackgoundBar-Color"], pygame.Rect(bkrect_dim))
-        pygame.draw.rect(screen, jsoncontrol["Loading Bar"]["MovingBar-Color"], LdRect_dim)
+        pygame.draw.rect(screen, jsoncontrol["loading_bar"]["backgoundbar_color"], pygame.Rect(bkrect_dim))
+        pygame.draw.rect(screen, jsoncontrol["loading_bar"]["movingbar_color"], LdRect_dim)
 
         LdBarSlide(LdRect_dim)
 

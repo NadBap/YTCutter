@@ -2,17 +2,9 @@ import json
 import os
 import subprocess
 import shutil
-import sys
+from BackEnd import file_utils 
 from UI import LoadingBar as lb
 
-
-
-def resource_path(relative_path):
-    if getattr(sys, 'frozen', False): 
-        base_path = sys._MEIPASS
-    else:
-        base_path = os.path.abspath(".")
-    return os.path.join(base_path, relative_path)
 
 class Downloader:
     def __init__(self, url, selection, file_path, thread=None):
@@ -21,16 +13,32 @@ class Downloader:
         self.file_path = file_path
         self.thread = thread
         self.is_playlist = self.detect_playlist()
-        json_path = resource_path("Util/user-experience.json")
+        self.want_playlist_downloaded = True
+        
+        json_path = file_utils.resource_path("Util/user-experience.json")
         with open(json_path, 'r') as file:
             self.jsoncontrol = json.load(file)
+            
         ffmpeg_path = os.path.join(os.path.dirname(__file__), "..", "Util", "ffmpeg")
         os.environ["PATH"] += os.pathsep + ffmpeg_path
+        
+
+
         print("ffmpeg found:", shutil.which("ffmpeg"))
         print(f"Selection: {selection}")
         
-        self.ytdlp_path = os.path.join(os.path.dirname(__file__), "..", "Util", "yt-dlp.exe")
+        self.ca_path = file_utils.resource_path("Util/cacert.pem")
+        print(self.ca_path)
+        os.environ["SSL_CERT_FILE"] = self.ca_path
+        os.environ["REQUESTS_CA_BUNDLE"] = self.ca_path
+        os.environ.setdefault("SSL_CERT_FILE", self.ca_path)
+        os.environ.setdefault("REQUESTS_CA_BUNDLE", self.ca_path)
+        print("ca file found:", shutil.which("cacert"))
+        if not os.path.exists(self.ca_path):
+            raise FileNotFoundError(f"CA bundle not found: {self.ca_path}")
 
+        self.ytdlp_path = os.path.join(os.path.dirname(__file__), "..", "Util", "yt-dlp.exe")
+        # self.certificate_path = os.path.join(os.path.dirname(__file__), "..", "Util", "cacert.pem")
         self.cookies_path = os.path.join(os.path.dirname(__file__), "..", "Util", "cookies.txt")
     def detect_playlist(self):
         url = str(self.url)
@@ -56,8 +64,8 @@ class Downloader:
            command = [
                     self.ytdlp_path,
                     "-f", "bestvideo+bestaudio/best",
-                    "--merge-output-format", self.jsoncontrol["Downloader"]["Formats"]["Video"],
-                    "--recode-video", self.jsoncontrol["Downloader"]["Formats"]["Video"],
+                    "--merge-output-format", self.jsoncontrol["downloader"]["formats"]["video"],
+                    "--recode-video", self.jsoncontrol["downloader"]["formats"]["video"],
                     "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -an"
                 ]
            print("Video only")
@@ -66,7 +74,7 @@ class Downloader:
                 self.ytdlp_path,
         "-f", "bestaudio/best",
         "--extract-audio",
-        "--audio-format", self.jsoncontrol["Downloader"]["Formats"]["Audio"],
+        "--audio-format", self.jsoncontrol["downloader"]["formats"]["audio"],
         "--audio-quality", "0",
             ]
             print("Audio Only")
@@ -75,8 +83,8 @@ class Downloader:
                 self.ytdlp_path,
                 "-f",
                 "bestvideo+bestaudio/best",
-                "--merge-output-format", self.jsoncontrol["Downloader"]["Formats"]["Video-Audio"],
-                "--recode-video", self.jsoncontrol["Downloader"]["Formats"]["Video-Audio"],
+                "--merge-output-format", self.jsoncontrol["downloader"]["formats"]["video_audio"],
+                "--recode-video", self.jsoncontrol["downloader"]["formats"]["video_audio"],
                 "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -c:a aac -b:a 192k"
             ]
             print("Video + Audio")
@@ -84,6 +92,10 @@ class Downloader:
             return None
         
         command.extend(["--cookies", self.cookies_path])
+        if self.is_playlist and not self.want_playlist_downloaded: command.extend(["--playlist-items", str(self.is_playlist)])
+        
+        command.extend(["-P", self.file_path, self.url])
+        '''
         if self.is_playlist:
             command.extend(
                 [
@@ -96,6 +108,7 @@ class Downloader:
             )
         else:
             command.extend(["-P", self.file_path, self.url])
+        '''
 
         return command
 
@@ -127,4 +140,4 @@ def main(url, selection, file_path, thread=None):
 
 
 if __name__ == "__main__":
-    main("https://www.youtube.com/watch?v=eeKRqnNHIAg", 1, "downloads/")
+    main("https://www.youtube.com/watch?v=IbYAVBp4KRE", 3, "downloads/")
