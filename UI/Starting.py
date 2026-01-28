@@ -21,10 +21,13 @@ def main():
     listLoadingSprites = os.listdir(rp("Util/Sprite/LoadingSprite"))
 
     def ExitClick(name=None):
+        if name == "clip":
+            result["isClipping"] = True
+        else:
+            result["isClipping"] = False
         result["link"] = YTlink.get()
         result["filepath"] = filedialog.askdirectory()
         result["selection"] = FOptions[FormatVar.get()]
-        result["button"] = name
         result["x"] = master.winfo_x()
         result["y"] = master.winfo_y()
         result["LoadingSprite"] = LoadingSpriteVar.get()
@@ -45,6 +48,10 @@ def main():
 
     Download = Button(master, text="Download", width=20, activebackground="light gray",
                 command=lambda: ExitClick("Download"))
+    
+    Clip = Button(master, text="Clip", width=20, activebackground="light gray",
+            command=lambda: ExitClick("clip"))
+    
     
     formatOption = ttk.Combobox(master, values=["Video+Audio", "Audio", "Video"], textvariable= FormatVar, state="readonly")
     formatOption.set("Video+Audio")
@@ -68,6 +75,7 @@ def main():
     formatOption.pack()
     Link.pack(pady=25)  
     Download.pack()
+    Clip.pack()
     spriteOption.pack(pady=5)
     # Make screen appear
     master.mainloop()

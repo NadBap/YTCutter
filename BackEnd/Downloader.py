@@ -7,14 +7,16 @@ from UI import LoadingBar as lb
 
 
 class Downloader:
-    def __init__(self, url, selection, file_path, thread=None):
+    def __init__(self, url, selection, file_path, thread=None, clipping=False, start=0, end=0):
         self.url = url
         self.selection = selection
         self.file_path = file_path
         self.thread = thread
         self.is_playlist = self.detect_playlist()
-        self.want_playlist_downloaded = True
-        
+        self.want_playlist_downloaded = False
+        self.start = start
+        self.clipping = clipping
+        self.end = end
         json_path = file_utils.resource_path("Util/user-experience.json")
         with open(json_path, 'r') as file:
             self.jsoncontrol = json.load(file)
@@ -63,7 +65,7 @@ class Downloader:
         if self.selection == 1:
            command = [
                     self.ytdlp_path,
-                    "-f", "bestvideo+bestaudio/best",
+                    "-f", "bestvideo",
                     "--merge-output-format", self.jsoncontrol["downloader"]["formats"]["video"],
                     "--recode-video", self.jsoncontrol["downloader"]["formats"]["video"],
                     "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -an"
@@ -72,7 +74,7 @@ class Downloader:
         elif self.selection == 2:
             command = [
                 self.ytdlp_path,
-        "-f", "bestaudio/best",
+        "-f", "bestaudio",
         "--extract-audio",
         "--audio-format", self.jsoncontrol["downloader"]["formats"]["audio"],
         "--audio-quality", "0",
@@ -82,15 +84,17 @@ class Downloader:
             command = [
                 self.ytdlp_path,
                 "-f",
-                "bestvideo+bestaudio/best",
+                "bestvideo*[vcodec^=avc]+bestaudio/best",
                 "--merge-output-format", self.jsoncontrol["downloader"]["formats"]["video_audio"],
                 "--recode-video", self.jsoncontrol["downloader"]["formats"]["video_audio"],
-                "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -c:a aac -b:a 192k"
+                "--postprocessor-args", "ffmpeg:-c:v libx264 -crf 18 -preset ultrafast -an"
             ]
             print("Video + Audio")
         else:
             return None
-        
+        if self.clipping: 
+            command.extend(["--force-keyframes-at-cuts", "--download-sections", 
+                        f"*{self.start}-{self.end}" ])
         command.extend(["--cookies", self.cookies_path])
         if self.is_playlist and not self.want_playlist_downloaded: command.extend(["--playlist-items", str(self.is_playlist)])
         
@@ -131,13 +135,14 @@ class Downloader:
         if command is None:
             print("No valid selection")
             return 1
+        print(command)
         return self.download(command)
 
 
-def main(url, selection, file_path, thread=None):
-    downloader = Downloader(url, selection, file_path, thread)
+def main(url, selection, file_path, thread=None, clipping=False, start=0, end=0):
+    downloader = Downloader(url, selection, file_path, thread, clipping, start, end)
     return downloader.run()
 
 
 if __name__ == "__main__":
-    main("https://www.youtube.com/watch?v=IbYAVBp4KRE", 3, "downloads/")
+    main("https://www.youtube.com/watch?v=MrTwapNWO6I", 3, "downloads/")

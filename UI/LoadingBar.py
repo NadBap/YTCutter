@@ -49,7 +49,7 @@ def defaultSprite(sprite):
 
 def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
     global running
-    
+    running = True
     sprite_folder = f"Util/Sprite/LoadingSprite/{sprite}"
     
     jsoncontrol = defaultSprite(sprite)
