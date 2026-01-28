@@ -32,5 +32,22 @@ Google: Press Export
 **Step 6**: Pray
 
 ## User-Experience.json
-This 
+This is to allow the user to change how the loading bar looks like and the format the video is downloaded in.
+
+You can access this by going into the Util folder
+
+**Supported Formats**
+
+| Video | Audio |
+| ----------- | ----------- |
+| mp3 | mp4 |
+| m4a | mkv |
+| aac | webm |
+| flac | avi |
+| wav | mov |
+
+**Unsupported formats will default back to mkv or mp3**
+
+## Adding your own gifs
+You cana
 
