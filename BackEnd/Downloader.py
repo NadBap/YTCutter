@@ -8,27 +8,28 @@ from UI import LoadingBar as lb
 
 class Downloader:
     def __init__(self, url, selection, file_path, thread=None, clipping=False, start=0, end=0):
-        self.url = url
-        self.selection = selection
-        self.file_path = file_path
-        self.thread = thread
-        self.is_playlist = self.detect_playlist()
-        self.want_playlist_downloaded = False
-        self.start = start
-        self.clipping = clipping
-        self.end = end
+        self.url = url 
+        self.selection = selection #Selects the download mode
+        self.file_path = file_path 
+        self.thread = thread #Poooooower to stop the loading bar thread
+        self.is_playlist = self.detect_playlist() #Checks if the link is in a playlist
+        self.want_playlist_downloaded = False 
+        self.start = start #Start of the clip
+        self.clipping = clipping #If the user wants to clip
+        self.end = end #End of the Clip
+        
         json_path = file_utils.resource_path("Util/user-experience.json")
         with open(json_path, 'r') as file:
             self.jsoncontrol = json.load(file)
             
+        #Importing ffmpeg
         ffmpeg_path = os.path.join(os.path.dirname(__file__), "..", "Util", "ffmpeg")
         os.environ["PATH"] += os.pathsep + ffmpeg_path
-        
-
-
         print("ffmpeg found:", shutil.which("ffmpeg"))
+        
         print(f"Selection: {selection}")
         
+        #Cookies and smth else idk (cerificate)
         self.ca_path = file_utils.resource_path("Util/cacert.pem")
         print(self.ca_path)
         os.environ["SSL_CERT_FILE"] = self.ca_path
@@ -39,9 +40,13 @@ class Downloader:
         if not os.path.exists(self.ca_path):
             raise FileNotFoundError(f"CA bundle not found: {self.ca_path}")
 
+        #Pathing exes
         self.ytdlp_path = os.path.join(os.path.dirname(__file__), "..", "Util", "yt-dlp.exe")
         # self.certificate_path = os.path.join(os.path.dirname(__file__), "..", "Util", "cacert.pem")
         self.cookies_path = os.path.join(os.path.dirname(__file__), "..", "Util", "cookies.txt")
+        self.node_path = os.path.join(os.path.dirname(__file__), "..", "Util", "node.exe")
+    
+    
     def detect_playlist(self):
         url = str(self.url)
         index_pos = url.find("index=")
@@ -63,6 +68,7 @@ class Downloader:
 
     def build_command(self):
         if self.selection == 1:
+            # Video Only Command
            command = [
                     self.ytdlp_path,
                     "-f", "bestvideo",
@@ -72,6 +78,7 @@ class Downloader:
                 ]
            print("Video only")
         elif self.selection == 2:
+            # Audio Only Command
             command = [
                 self.ytdlp_path,
         "-f", "bestaudio",
@@ -81,8 +88,10 @@ class Downloader:
             ]
             print("Audio Only")
         elif self.selection == 3:
+            # Both Video & Audio Command
             command = [
                 self.ytdlp_path,
+                
                 "-f",
                 "bestvideo*[vcodec^=avc]+bestaudio/best",
                 "--merge-output-format", self.jsoncontrol["downloader"]["formats"]["video_audio"],
@@ -92,10 +101,17 @@ class Downloader:
             print("Video + Audio")
         else:
             return None
+        
+        #Clipping add
         if self.clipping: 
             command.extend(["--force-keyframes-at-cuts", "--download-sections", 
                         f"*{self.start}-{self.end}" ])
-        command.extend(["--cookies", self.cookies_path])
+        
+        #Cookies and etc add
+        command.extend(["--cookies", self.cookies_path, "--extractor-arg", "youtube:player_client=web_safari",
+                       "--js-runtimes", f"node:{self.node_path}"])
+        
+        #Playlist add
         if self.is_playlist and not self.want_playlist_downloaded: command.extend(["--playlist-items", str(self.is_playlist)])
         
         command.extend(["-P", self.file_path, self.url])
@@ -146,3 +162,5 @@ def main(url, selection, file_path, thread=None, clipping=False, start=0, end=0)
 
 if __name__ == "__main__":
     main("https://www.youtube.com/watch?v=MrTwapNWO6I", 3, "downloads/")
+
+

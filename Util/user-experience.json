@@ -2,8 +2,8 @@
     "downloader": {
         "formats": {
             "video_audio": "mp4",
-            "audio": "wav",
-            "video": "mkv"
+            "audio": "webm",
+            "video": "mp4"
         }
     },
     "loading_bar": {
@@ -11,6 +11,6 @@
         "font_color": "Cyan",
         "backgoundbar_color": "Royal Blue",
         "movingbar_color": "Cyan",
-        "loaded_sprite": "Niko Dance"
+        "loaded_sprite": "Sonic Shadow Dap"
     }
 }

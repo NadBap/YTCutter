@@ -49,5 +49,14 @@ You can access this by going into the Util folder
 **Unsupported formats will default back to mkv or mp3**
 
 ## Adding your own gifs
-You cana
+You can add your own gifs by simply renaming
 
+**Step 1**: Find a gif you like
+
+**Step 2**: Use a gif splitter to split each individual frame of the gif (easy website you can use is https://ezgif.com/split)
+
+**Step 3**: Rename each file by number and add **Loading-** before (ex: Loading-1, Loading-2, Loading-3, etc...)
+
+**Step 4**: Drag the folder with all gif frames into _internal/Util/Sprite/Loading
+
+**Step 5**: It should work ¯\_(ツ)_/¯

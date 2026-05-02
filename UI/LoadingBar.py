@@ -13,7 +13,8 @@ def load_frame_paths(sprite_folder):
     if not os.path.isdir(folder):
         raise FileNotFoundError(f"Sprite folder not found: {folder}")
 
-    pattern = re.compile(r'Loading-(\d+)\.\w+$') 
+    pattern = re.compile(r'Loading-(\d+)\.\w+$')
+     
     numbered = []
     for name in os.listdir(folder):
         full = join(folder, name)
@@ -50,6 +51,7 @@ def defaultSprite(sprite):
 def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
     global running
     running = True
+    
     sprite_folder = f"Util/Sprite/LoadingSprite/{sprite}"
     
     jsoncontrol = defaultSprite(sprite)
@@ -62,16 +64,16 @@ def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
 
     ticks_per_frame = max(1, fps // total_frames)
 
-    if debug:
-        print("DEBUG: sprite_folder =", file_utils.resource_path(sprite_folder))
-        print("DEBUG: total_frames =", total_frames)
-        print("DEBUG: ticks_per_frame =", ticks_per_frame)
-        print("DEBUG: loop duration seconds =", (total_frames * ticks_per_frame) / fps)
+
 
     pygame.init()
     os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x, y)
     screen = pygame.display.set_mode((400, 300))
     clock = pygame.time.Clock()
+    pygame.display.set_caption("YTCutter")
+    icon = pygame.image.load(file_utils.resource_path("Util/Sprite/Icon.png"))
+    pygame.display.set_icon(icon)
+    
 
     fontfilepath = file_utils.resource_path("Util/Font/DTM-Sans.ttf")
     font = pygame.font.Font(fontfilepath, 50)
@@ -82,7 +84,14 @@ def main(x, y, sprite="CharlieBrownGif", fps=60, debug=False):
 
 
     tick = 0  
-
+    
+    if debug:
+        print("DEBUG: sprite_folder =", file_utils.resource_path(sprite_folder))
+        print("DEBUG: total_frames =", total_frames)
+        print("DEBUG: ticks_per_frame =", ticks_per_frame)
+        print("DEBUG: loop duration seconds =", (total_frames * ticks_per_frame) / fps)
+        print("DEBUG: Loading Bar Slide Dim = ", LdRect_dim)
+        print("DEBUG: Loading Bar Dim = ", bkrect_dim)
         
     while running:
         for event in pygame.event.get():
@@ -118,14 +127,24 @@ def bkBar(rect_width, rect_height, screen):
     return [x, y, rect_width, rect_height]
 
 def LdBarSlide(LdRect_dim):
+    # 0 = X
+    # 1 = Y
+    # 2 = Width
+    # 3 = Height
     if LdRect_dim[0] >= 300 and LdRect_dim[2] != 0:
+        # Makes the loading bar disappear in the end
         LdRect_dim[0] += 2
         LdRect_dim[2] -= 2
     elif LdRect_dim[2] != 50:
+        # Makes the Loading bar come back
         LdRect_dim[0] = 50
         LdRect_dim[2] += 2
     else:
+        # Makes the loading bar move right
         LdRect_dim[0] += 2
+
+def LdBarFull(LdRect_dim, percentage):
+    return
 
 if __name__ == "__main__":
     main(200, 100, sprite="Sonic Shadow Dap", debug=True)

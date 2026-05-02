@@ -1,7 +1,7 @@
 from UI import Starting as Init
 from UI import LoadingBar as lb
 from UI import Clipping as clip
-from BackEnd import Downloader as ddd
+from BackEnd import DownloaderApi as ddd
 import threading
 
 class MainApp:
@@ -44,15 +44,23 @@ def main():
         YTCutter = MainApp()
         
         if YTCutter.data["isClipping"]:
-            print(YTCutter.data["link"])
+            print("YTCutter data: ", YTCutter.data["link"])            
             start, end = YTCutter.clipping()
-            thread = YTCutter.LoadingBar()
-            YTCutter.Download(thread, start, end)
-        else:
-            thread = YTCutter.LoadingBar()
-            YTCutter.Download(thread)
-       
 
+
+            if start != 1 and end != 2:
+                print("Is Clipping")
+                thread = YTCutter.LoadingBar()
+                YTCutter.Download(thread, start, end)
+                thread.join()
+                continue
+            else:
+                continue
+            
+            
+        print("Is Downloading")
+        thread = YTCutter.LoadingBar()
+        YTCutter.Download(thread)
         thread.join()
     
 if __name__ == "__main__":
